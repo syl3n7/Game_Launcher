@@ -20,6 +20,7 @@ public class Update_Launch : MonoBehaviour
     {
         Debug.Log("Launch Success!");
         Process.Start("cmd.exe", "/c start launch");
+        //https://github.com/syl3n7/MyLittleExploree/releases/download/0.54/MyLittleExploreeV0.54.zip
     }
     
     void Start()
