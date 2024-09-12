@@ -28,19 +28,19 @@ public class Update_Launch : MonoBehaviour
         Button btn = downloadBtn.GetComponent<Button>();
         btn.onClick.AddListener(Launch);
         Debug.developerConsoleEnabled = true;
+        Debug.developerConsoleVisible = true;
         Button btn2 = playBtn.GetComponent<Button>();
         btn2.onClick.AddListener(ExecuteNow);
     }
 
     void ExecuteNow()
     {
-        Debug.Log("Launch Success!");
-        Process.Start(gamelocation, "");
+        Process.Start("Resources/MyLittleExploree/MyLittleExploree.exe", "");
     }
 
     void Launch()
     {
-        Debug.Log("Checking for update!");
+        Debug.Log("Self-update!");
         string launchPath = Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/'));
         StartCoroutine(Exec_Updater(URL, launchPath));
     }
@@ -65,10 +65,9 @@ public class Update_Launch : MonoBehaviour
             File.WriteAllBytes("Resources/downloaded.zip", last_version.downloadHandler.data);
             
             ZipFile.ExtractToDirectory("Resources/downloaded.zip", "Resources/MyLittleExploree");
-            
-            gamelocation = "Resources/MyLittleExploree/MyLittleExploree.exe";
 
             playBtn.gameObject.GetComponent<Button>().interactable = true;
+            downloadBtn.gameObject.GetComponent<Button>().interactable = false;
 
         }
     }
