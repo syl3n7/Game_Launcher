@@ -33,7 +33,7 @@ public class Update_Launch : MonoBehaviour
 
     void ExecuteNow()
     {
-        Process.Start("Resources/MyLittleExploree/MyLittleExploree.exe", "");
+        Process.Start("Resources/MyLittleExploree/MyLittleExploree.exe");
     }
 
     void Launch()
