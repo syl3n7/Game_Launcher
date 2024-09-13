@@ -17,8 +17,6 @@ public class Update_Launch : MonoBehaviour
     [SerializeField] private Button playBtn;
     [SerializeField] private Text error_text;
     [SerializeField] private Text progress_text;
-    
-    string gamelocation = null;
 
     string URL = "https://github.com/syl3n7/MyLittleExploree/releases/download/0.54/MyLittleExploreeV0.54.zip";
 
