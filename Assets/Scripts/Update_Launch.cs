@@ -25,13 +25,14 @@ public class Update_Launch : MonoBehaviour
         
     void Awake()
     {
-        //Makes the button to change its function to be launching the executable of the game.
-        Button btn = downloadBtn.GetComponent<Button>();
-        btn.onClick.AddListener(game_Update);
         Debug.developerConsoleEnabled = true;
         Debug.developerConsoleVisible = true;
+        Button btn = downloadBtn.GetComponent<Button>();
+        btn.onClick.AddListener(check_for_update);
+        downloadBtn.gameObject.GetComponent<Button>().interactable = false;
         Button btn2 = playBtn.GetComponent<Button>();
         btn2.onClick.AddListener(executeNow);
+        playBtn.gameObject.GetComponent<Button>().interactable = false;
     }
     
     void game_Update()
@@ -39,7 +40,7 @@ public class Update_Launch : MonoBehaviour
         Debug.Log("updating game!");
         StartCoroutine(exec_Updater(game_URL, game_zip_path, game_folder_path));
     }
-    
+
     void executeNow()
     {
         Debug.Log("execute now!");
@@ -52,22 +53,36 @@ public class Update_Launch : MonoBehaviour
     private IEnumerator exec_Updater(string URL, string zip_path, string folder_path)
     {
         //Download and extract a zip file from somewhere and then call the extract funcion.
-
-        UnityWebRequest last_version = UnityWebRequest.Get(URL);
-        yield return last_version.SendWebRequest();
-
-        if (!last_version.downloadHandler.isDone) error_text.text = "Communication Error: "+ last_version.error;
-        else 
+        if (URL == game_URL)
         {
+            UnityWebRequest last_version = UnityWebRequest.Get(URL);
+            yield return last_version.SendWebRequest();
+            progress_text.text = last_version.downloadProgress.ToString();
 
-            File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
-            
-            ZipFile.ExtractToDirectory(zip_path, folder_path);
+            if (!last_version.downloadHandler.isDone)
+            {
+                error_text.text = "Communication Error: " + last_version.error;
+                downloadBtn.gameObject.GetComponent<Button>().interactable = true;
+            }
+            else
+            {
+                if (last_version.downloadHandler.isDone && last_version.downloadHandler.nativeData.Length > 0)
+                {
+                    if (File.Exists(folder_path)) File.Delete(folder_path);
+                    else File.Create(folder_path);
 
-            playBtn.gameObject.GetComponent<Button>().interactable = true;
-            downloadBtn.gameObject.GetComponent<Button>().interactable = false;
+                    File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
 
+                    ZipFile.ExtractToDirectory(zip_path, folder_path);
+
+                    playBtn.gameObject.GetComponent<Button>().interactable = true;
+                    downloadBtn.gameObject.GetComponent<Button>().interactable = false;
+                }
+            }
+        }
+        else
+        {
+            Application.Quit();
         }
     }
-    
 }
