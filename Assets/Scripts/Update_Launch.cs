@@ -17,12 +17,8 @@ public class Update_Launch : MonoBehaviour
     [SerializeField] private Button playBtn;
     [SerializeField] private Text error_text;
     [SerializeField] private Text progress_text;
-
-    private string app_URL = "https://steelchunk.eu/releases/latest.zip";
-    private string app_zip_path = Application.streamingAssetsPath + "/latest.zip";
-    private string app_folder_path = Application.streamingAssetsPath + "/";
-    private string app_exe_path = Application.streamingAssetsPath + "/Game_Launcher.exe";
-    private string game_URL = "https://github.com/syl3n7/MyLittleExploree/releases/download/0.54/MyLittleExploreeV0.54.zip";
+    
+    private string game_URL = "https://steelchunk.eu/releases/latest.zip";
     private string game_zip_path = Application.streamingAssetsPath + "/MyLittleExploreeV0.54.zip";
     private string game_folder_path = Application.streamingAssetsPath + "/MyLittleExploree";
     private string game_exe_path = Application.streamingAssetsPath + "/MyLittleExploree/MyLittleExploreeV0.54.exe";
@@ -37,17 +33,6 @@ public class Update_Launch : MonoBehaviour
         Button btn2 = playBtn.GetComponent<Button>();
         btn2.onClick.AddListener(executeNow);
     }
-
-    void Start()
-    {
-        self_update();
-    }
-    
-    void self_update()
-    {
-        Debug.Log("Self-update!");
-        StartCoroutine(exec_Updater(app_URL, app_zip_path, app_folder_path));
-    }
     
     void game_Update()
     {
@@ -58,7 +43,10 @@ public class Update_Launch : MonoBehaviour
     void executeNow()
     {
         Debug.Log("execute now!");
-        Process.Start(game_exe_path);
+        Process foo = new Process();
+        foo.StartInfo.FileName = "MyLittleExploreeV0.54.exe";
+        foo.StartInfo.Arguments = game_exe_path;
+        foo.Start();
     }
 
     private IEnumerator exec_Updater(string URL, string zip_path, string folder_path)
