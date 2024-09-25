@@ -41,39 +41,40 @@ public class Update_Launch : MonoBehaviour
         bttn.gameObject.GetComponent<Button>().interactable = true;
     }
 
-    void game_Update()
+    void Update()
     {
-        //Download and extract a zip file from somewhere and then call the extract funcion.
-        UnityWebRequest last_version = UnityWebRequest.Get(game_URL);
-        last_version.SendWebRequest();
-
-        //progress_text.text = last_version.downloadProgress.ToString();
-
-        if (!last_version.downloadHandler.isDone)
+        if (Process.GetProcessesByName("MyLittleExploree").Length > 0)
         {
-            error_text.text = "Communication Error: " + last_version.error;
-            bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Download";
+            error_text.text = "already running, disabling button";
+            bttn.gameObject.GetComponent<Button>().interactable = false;
         }
         else
         {
-            if (last_version.downloadHandler.isDone && last_version.downloadHandler.nativeData.Length > 0)
-            {
-                //if the directory already exists, delete it and the contents inside it.
-                if (Directory.Exists(game_folder_path)) Directory.Delete(game_folder_path, true);
-                //else it creates the directory
-                else Directory.CreateDirectory(game_folder_path);
-                //gather the downloaded data from RAM and put it into a zip file.
-                File.WriteAllBytes(game_zip_path, last_version.downloadHandler.data);
-                //extract the data from the zip file into the created directory.
-                ZipFile.ExtractToDirectory(game_zip_path, game_folder_path);
-            }
+            error_text.text = "not running, enabling button";
+            bttn.gameObject.GetComponent<Button>().interactable = true;
         }
+    }
+
+    void game_Update()
+    {
+
+        //if the directory already exists, delete it and the contents inside it.
+        if (Directory.Exists(game_folder_path)) Directory.Delete(game_folder_path, true);
+        //else it creates the directory
+        else Directory.CreateDirectory(game_folder_path);
+
+        //Debug.Log("updating game!");
+        StartCoroutine(downloader(game_URL, game_zip_path));
+
+        //extract the data from the zip file into the created directory.
+        ZipFile.ExtractToDirectory(game_zip_path, game_folder_path);
 
         //reprogram the download button to start the game.
         bttn.gameObject.GetComponent<Button>().interactable = false;
         bttn.GetComponent<Button>().onClick.AddListener(executeNow);
         bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
         bttn.gameObject.GetComponent<Button>().interactable = true;
+
     }
 
     void executeNow()
@@ -94,5 +95,27 @@ public class Update_Launch : MonoBehaviour
             game_Update();
         }
 
+    }
+
+    private IEnumerator downloader(string URL, string zip_path)
+    {
+        //Download and extract a zip file from somewhere and then call the extract funcion.
+        UnityWebRequest last_version = UnityWebRequest.Get(URL);
+        yield return last_version.SendWebRequest();
+
+        if (!last_version.downloadHandler.isDone)
+        {
+            error_text.text = "Communication Error: " + last_version.error;
+            bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Download";
+        }
+        else
+        {
+            if (last_version.downloadHandler.isDone && last_version.downloadHandler.nativeData.Length > 0)
+            {
+                yield return last_version.downloadHandler.data;
+                //gather the downloaded data from RAM and put it into a zip file.
+                File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
+            }
+        }
     }
 }
