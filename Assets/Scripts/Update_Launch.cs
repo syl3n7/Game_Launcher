@@ -13,41 +13,58 @@ using UnityEngine.Events;
 
 public class Update_Launch : MonoBehaviour
 {
-    [SerializeField] private Button downloadBtn;
-    [SerializeField] private Button playBtn;
+    [SerializeField] private Button bttn;
     [SerializeField] private Text error_text;
     [SerializeField] private Text progress_text;
-    
-    private string game_URL = "https://steelchunk.eu/releases/latest.zip";
-    private string game_zip_path = Application.streamingAssetsPath + "/MyLittleExploreeV0.54.zip";
-    private string game_folder_path = Application.streamingAssetsPath + "/MyLittleExploree";
-    private string game_exe_path = Application.streamingAssetsPath + "/MyLittleExploree/MyLittleExploreeV0.54.exe";
-        
+
+    private string game_URL = "https://steelchunk.eu/games/releases/latest.zip";
+    private string game_zip_path = Application.dataPath + "/latest.zip";
+    private string game_folder_path = Application.dataPath + "/MyLittleExploree";
+
     void Awake()
     {
+        if (File.Exists(game_zip_path) && Directory.Exists(game_folder_path) && File.Exists(game_folder_path + "/MyLittleExploree.exe"))
+        {
+            error_text.text = "Files already present, you can play now";
+            //need to implement a md5 check to see if files are older than whats on server, so that you only download it if theres a new version.
+            bttn.gameObject.GetComponent<Button>().interactable = false;
+            bttn.GetComponent<Button>().onClick.AddListener(executeNow);
+            bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
+            bttn.gameObject.GetComponent<Button>().interactable = true;
+        }
+        else
+        {
+            bttn.GetComponent<Button>().onClick.AddListener(game_Update);
+        }
         Debug.developerConsoleEnabled = true;
         Debug.developerConsoleVisible = true;
-        Button btn = downloadBtn.GetComponent<Button>();
-        btn.onClick.AddListener(check_for_update);
-        downloadBtn.gameObject.GetComponent<Button>().interactable = false;
-        Button btn2 = playBtn.GetComponent<Button>();
-        btn2.onClick.AddListener(executeNow);
-        playBtn.gameObject.GetComponent<Button>().interactable = false;
+        bttn.gameObject.GetComponent<Button>().interactable = true;
     }
-    
+
     void game_Update()
     {
-        Debug.Log("updating game!");
+        //Debug.Log("updating game!");
         StartCoroutine(exec_Updater(game_URL, game_zip_path, game_folder_path));
     }
 
     void executeNow()
     {
-        Debug.Log("execute now!");
-        Process foo = new Process();
-        foo.StartInfo.FileName = "MyLittleExploreeV0.54.exe";
-        foo.StartInfo.Arguments = game_exe_path;
-        foo.Start();
+        //Debug.Log("execute now!");
+        if (Directory.Exists(game_folder_path + "/MyLittleExploree_Data") && Directory.Exists(game_folder_path) && File.Exists(game_folder_path + "/MyLittleExploree.exe"))
+        {
+            Process foo = new Process();
+            foo.StartInfo.FileName = game_folder_path + "/MyLittleExploree.exe";
+            foo.Start();
+        }
+        else
+        {
+            error_text.text = "Files are not present, downloading again!";
+            bttn.gameObject.GetComponent<Button>().interactable = false;
+            bttn.GetComponent<Button>().onClick.AddListener(executeNow);
+            bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Downloading..";
+            game_Update();
+        }
+
     }
 
     private IEnumerator exec_Updater(string URL, string zip_path, string folder_path)
@@ -62,26 +79,32 @@ public class Update_Launch : MonoBehaviour
             if (!last_version.downloadHandler.isDone)
             {
                 error_text.text = "Communication Error: " + last_version.error;
-                downloadBtn.gameObject.GetComponent<Button>().interactable = true;
+                bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Download";
             }
             else
             {
                 if (last_version.downloadHandler.isDone && last_version.downloadHandler.nativeData.Length > 0)
                 {
-                    if (File.Exists(folder_path)) File.Delete(folder_path);
-                    else File.Create(folder_path);
-
+                    //if the directory already exists, delete it and the contents inside it.
+                    if (Directory.Exists(folder_path)) Directory.Delete(folder_path, true);
+                    //else it creates the directory
+                    else Directory.CreateDirectory(folder_path);
+                    //gather the downloaded data from RAM and put it into a zip file.
                     File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
-
+                    //extract the data from the zip file into the created directory.
                     ZipFile.ExtractToDirectory(zip_path, folder_path);
 
-                    playBtn.gameObject.GetComponent<Button>().interactable = true;
-                    downloadBtn.gameObject.GetComponent<Button>().interactable = false;
+                    //reprogram the download button to start the game.
+                    bttn.gameObject.GetComponent<Button>().interactable = false;
+                    bttn.GetComponent<Button>().onClick.AddListener(executeNow);
+                    bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
+                    bttn.gameObject.GetComponent<Button>().interactable = true;
                 }
             }
         }
         else
         {
+            //need to implement exeption and show pop up when error occurs
             Application.Quit();
         }
     }
