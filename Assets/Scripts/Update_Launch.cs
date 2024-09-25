@@ -23,6 +23,9 @@ public class Update_Launch : MonoBehaviour
 
     void Awake()
     {
+        Debug.developerConsoleEnabled = true;
+        Debug.developerConsoleVisible = true;
+
         if (File.Exists(game_zip_path) && Directory.Exists(game_folder_path) && File.Exists(game_folder_path + "/MyLittleExploree.exe"))
         {
             error_text.text = "Files already present, you can play now";
@@ -36,8 +39,6 @@ public class Update_Launch : MonoBehaviour
         {
             bttn.GetComponent<Button>().onClick.AddListener(game_Update);
         }
-        Debug.developerConsoleEnabled = true;
-        Debug.developerConsoleVisible = true;
         bttn.gameObject.GetComponent<Button>().interactable = true;
     }
 
@@ -57,7 +58,6 @@ public class Update_Launch : MonoBehaviour
 
     void game_Update()
     {
-
         //if the directory already exists, delete it and the contents inside it.
         if (Directory.Exists(game_folder_path)) Directory.Delete(game_folder_path, true);
         //else it creates the directory
@@ -66,15 +66,11 @@ public class Update_Launch : MonoBehaviour
         //Debug.Log("updating game!");
         StartCoroutine(downloader(game_URL, game_zip_path));
 
-        //extract the data from the zip file into the created directory.
-        ZipFile.ExtractToDirectory(game_zip_path, game_folder_path);
-
         //reprogram the download button to start the game.
         bttn.gameObject.GetComponent<Button>().interactable = false;
         bttn.GetComponent<Button>().onClick.AddListener(executeNow);
         bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
         bttn.gameObject.GetComponent<Button>().interactable = true;
-
     }
 
     void executeNow()
@@ -99,6 +95,7 @@ public class Update_Launch : MonoBehaviour
 
     private IEnumerator downloader(string URL, string zip_path)
     {
+        bttn.gameObject.GetComponent<Button>().interactable = false;
         //Download and extract a zip file from somewhere and then call the extract funcion.
         UnityWebRequest last_version = UnityWebRequest.Get(URL);
         yield return last_version.SendWebRequest();
@@ -115,6 +112,9 @@ public class Update_Launch : MonoBehaviour
                 yield return last_version.downloadHandler.data;
                 //gather the downloaded data from RAM and put it into a zip file.
                 File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
+                //extract the data from the zip file into the created directory.
+                ZipFile.ExtractToDirectory(game_zip_path, game_folder_path);
+                bttn.gameObject.GetComponent<Button>().interactable = true;
             }
         }
     }
