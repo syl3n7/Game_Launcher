@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using UnityEngine.Events;
+using System.Runtime.ExceptionServices;
 
 public class Update_Launch : MonoBehaviour
 {
@@ -31,6 +32,7 @@ public class Update_Launch : MonoBehaviour
             error_text.text = "Files already present, you can play now";
             //need to implement a md5 check to see if files are older than whats on server, so that you only download it if theres a new version.
             bttn.gameObject.GetComponent<Button>().interactable = false;
+            bttn.GetComponent<Button>().onClick.RemoveAllListeners();
             bttn.GetComponent<Button>().onClick.AddListener(executeNow);
             bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
             bttn.gameObject.GetComponent<Button>().interactable = true;
@@ -39,6 +41,7 @@ public class Update_Launch : MonoBehaviour
         {
             bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Download";
             bttn.gameObject.GetComponent<Button>().interactable = true;
+            bttn.GetComponent<Button>().onClick.RemoveAllListeners();
             bttn.GetComponent<Button>().onClick.AddListener(game_Update);
         }
     }
@@ -47,60 +50,27 @@ public class Update_Launch : MonoBehaviour
     {
         if (Process.GetProcessesByName("MyLittleExploree").Length > 0)
         {
-            error_text.text = "already running, disabling button";
+            //error_text.text = "already running, disabling button";
             bttn.gameObject.GetComponent<Button>().interactable = false;
         }
         else
         {
-            error_text.text = "not running, enabling button";
+            //error_text.text = "not running, enabling button";
             bttn.gameObject.GetComponent<Button>().interactable = true;
-        }
-    }
-
-    void deleteAndCreate()
-    {
-        //delete directoty and the files inside.
-        if (Directory.Exists(game_folder_path)) Directory.Delete(game_folder_path, true);
-        if (File.Exists(game_zip_path)) File.Delete(game_zip_path);
-        //creates the directory
-        Directory.CreateDirectory(game_folder_path);
-    }
-
-    bool checkForDir(string dir)
-    {
-        //if the directory already exists
-        if (Directory.Exists(dir))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    bool checkForFiles(string files)
-    {
-        //check if the files already exists
-        if (File.Exists(files))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
         }
     }
 
     void game_Update()
     {
-        if (!checkForDir(game_folder_path)) deleteAndCreate();
+        if (File.Exists(game_zip_path)) File.Delete(game_zip_path);
+        if (Directory.Exists(game_zip_path)) Directory.Delete(game_zip_path, true);
 
         //Debug.Log("updating game!");
         StartCoroutine(downloader(game_URL, game_zip_path));
 
         //reprogram the download button to start the game.
         bttn.gameObject.GetComponent<Button>().interactable = false;
+        bttn.GetComponent<Button>().onClick.RemoveAllListeners();
         bttn.GetComponent<Button>().onClick.AddListener(executeNow);
         bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
         bttn.gameObject.GetComponent<Button>().interactable = true;
@@ -108,14 +78,11 @@ public class Update_Launch : MonoBehaviour
 
     void executeNow()
     {
-        //Debug.Log("execute now!");
-        if (!checkForDir(game_folder_path) && !checkForFiles(game_zip_path))
+        if (!Directory.Exists(game_folder_path) || !File.Exists(game_zip_path))
         {
-            deleteAndCreate();
             error_text.text = "Files are not present, downloading again!";
-            bttn.gameObject.GetComponent<Button>().interactable = false;
-            bttn.GetComponent<Button>().onClick.AddListener(executeNow);
             bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Downloading..";
+            bttn.gameObject.GetComponent<Button>().interactable = false;
             game_Update();
         }
         else
@@ -144,12 +111,17 @@ public class Update_Launch : MonoBehaviour
             if (last_version.downloadHandler.isDone && last_version.downloadHandler.nativeData.Length > 0)
             {
                 yield return last_version.downloadHandler.data;
+
                 //gather the downloaded data from RAM and put it into a zip file.
                 File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
-                //extract the data from the zip file into the created directory.
                 ZipFile.ExtractToDirectory(game_zip_path, game_folder_path);
+                bttn.GetComponent<Button>().onClick.RemoveAllListeners();
+                bttn.GetComponent<Button>().onClick.AddListener(executeNow);
+                bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
                 bttn.gameObject.GetComponent<Button>().interactable = true;
             }
         }
     }
 }
+
+
