@@ -37,9 +37,10 @@ public class Update_Launch : MonoBehaviour
         }
         else
         {
+            bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Download";
+            bttn.gameObject.GetComponent<Button>().interactable = true;
             bttn.GetComponent<Button>().onClick.AddListener(game_Update);
         }
-        bttn.gameObject.GetComponent<Button>().interactable = true;
     }
 
     void Update()
@@ -56,12 +57,44 @@ public class Update_Launch : MonoBehaviour
         }
     }
 
+    void deleteAndCreate()
+    {
+        //delete directoty and the files inside.
+        if (Directory.Exists(game_folder_path)) Directory.Delete(game_folder_path, true);
+        if (File.Exists(game_zip_path)) File.Delete(game_zip_path);
+        //creates the directory
+        Directory.CreateDirectory(game_folder_path);
+    }
+
+    bool checkForDir(string dir)
+    {
+        //if the directory already exists
+        if (Directory.Exists(dir))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool checkForFiles(string files)
+    {
+        //check if the files already exists
+        if (File.Exists(files))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     void game_Update()
     {
-        //if the directory already exists, delete it and the contents inside it.
-        if (Directory.Exists(game_folder_path)) Directory.Delete(game_folder_path, true);
-        //else it creates the directory
-        else Directory.CreateDirectory(game_folder_path);
+        if (!checkForDir(game_folder_path)) deleteAndCreate();
 
         //Debug.Log("updating game!");
         StartCoroutine(downloader(game_URL, game_zip_path));
@@ -76,19 +109,20 @@ public class Update_Launch : MonoBehaviour
     void executeNow()
     {
         //Debug.Log("execute now!");
-        if (Directory.Exists(game_folder_path + "/MyLittleExploree_Data") && Directory.Exists(game_folder_path) && File.Exists(game_folder_path + "/MyLittleExploree.exe"))
+        if (!checkForDir(game_folder_path) && !checkForFiles(game_zip_path))
         {
-            Process foo = new Process();
-            foo.StartInfo.FileName = game_folder_path + "/MyLittleExploree.exe";
-            foo.Start();
-        }
-        else
-        {
+            deleteAndCreate();
             error_text.text = "Files are not present, downloading again!";
             bttn.gameObject.GetComponent<Button>().interactable = false;
             bttn.GetComponent<Button>().onClick.AddListener(executeNow);
             bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Downloading..";
             game_Update();
+        }
+        else
+        {
+            Process foo = new Process();
+            foo.StartInfo.FileName = game_folder_path + "/MyLittleExploree.exe";
+            foo.Start();
         }
 
     }
