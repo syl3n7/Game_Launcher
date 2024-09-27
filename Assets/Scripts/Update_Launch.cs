@@ -21,13 +21,15 @@ public class Update_Launch : MonoBehaviour
     private string game_URL = "https://steelchunk.eu/games/releases/latest.zip";
     private string game_zip_path = Application.dataPath + "/latest.zip";
     private string game_folder_path = Application.dataPath + "/MyLittleExploree";
+    private string game_exe_path = Application.dataPath + "/MyLittleExploree/MyLittleExploree.exe";
 
     void Awake()
     {
-        Debug.developerConsoleEnabled = true;
-        Debug.developerConsoleVisible = true;
+        //Debug.developerConsoleEnabled = true;
+        //Debug.developerConsoleVisible = true;
+        Application.targetFrameRate = 60;
 
-        if (File.Exists(game_zip_path) && Directory.Exists(game_folder_path) && File.Exists(game_folder_path + "/MyLittleExploree.exe"))
+        if (File.Exists(game_zip_path) && Directory.Exists(game_folder_path) && File.Exists(game_exe_path))
         {
             error_text.text = "Files already present, you can play now";
             //need to implement a md5 check to see if files are older than whats on server, so that you only download it if theres a new version.
@@ -88,7 +90,7 @@ public class Update_Launch : MonoBehaviour
         else
         {
             Process foo = new Process();
-            foo.StartInfo.FileName = game_folder_path + "/MyLittleExploree.exe";
+            foo.StartInfo.FileName = game_exe_path;
             foo.Start();
         }
 

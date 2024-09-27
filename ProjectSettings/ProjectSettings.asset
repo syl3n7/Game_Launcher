@@ -87,7 +87,7 @@ PlayerSettings:
   deferSystemGesturesMode: 0
   hideHomeButton: 0
   submitAnalytics: 1
-  usePlayerLog: 1
+  usePlayerLog: 0
   dedicatedServerOptimizations: 0
   bakeCollisionMeshes: 0
   forceSingleInstance: 1
@@ -139,7 +139,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 0.3
+  bundleVersion: 0.3.2
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
