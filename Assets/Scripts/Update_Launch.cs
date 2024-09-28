@@ -15,8 +15,8 @@ using System.Runtime.ExceptionServices;
 public class Update_Launch : MonoBehaviour
 {
     [SerializeField] private Button bttn;
-    [SerializeField] private Text error_text;
-    [SerializeField] private Text progress_text;
+    //[SerializeField] private Text error_text;
+    //[SerializeField] private Text progress_text;
 
     private string game_URL = "https://steelchunk.eu/games/releases/latest.zip";
     private string game_zip_path = Application.dataPath + "/latest.zip";
@@ -31,7 +31,7 @@ public class Update_Launch : MonoBehaviour
 
         if (File.Exists(game_zip_path) && Directory.Exists(game_folder_path) && File.Exists(game_exe_path))
         {
-            error_text.text = "Files already present, you can play now";
+            //error_text.text = "Files already present, you can play now";
             //need to implement a md5 check to see if files are older than whats on server, so that you only download it if theres a new version.
             bttn.gameObject.GetComponent<Button>().interactable = false;
             bttn.GetComponent<Button>().onClick.RemoveAllListeners();
@@ -82,7 +82,7 @@ public class Update_Launch : MonoBehaviour
     {
         if (!Directory.Exists(game_folder_path) || !File.Exists(game_zip_path))
         {
-            error_text.text = "Files are not present, downloading again!";
+            //error_text.text = "Files are not present, downloading again!";
             bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Downloading..";
             bttn.gameObject.GetComponent<Button>().interactable = false;
             game_Update();
@@ -105,7 +105,7 @@ public class Update_Launch : MonoBehaviour
 
         if (!last_version.downloadHandler.isDone)
         {
-            error_text.text = "Communication Error: " + last_version.error;
+            //error_text.text = "Communication Error: " + last_version.error;
             bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Download";
         }
         else
