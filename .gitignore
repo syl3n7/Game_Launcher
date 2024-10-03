@@ -76,3 +76,11 @@ crashlytics-build.properties
 .vscode/
 
 .idea/.idea.Game_Launcher/.idea/
+
+Assets/latest.zip
+
+Assets/latest.zip.meta
+
+Assets/MyLittleExploree/
+
+Assets/MyLittleExploree.meta
