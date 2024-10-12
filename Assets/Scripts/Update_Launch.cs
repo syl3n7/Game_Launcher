@@ -11,17 +11,24 @@ using System.IO;
 using System.IO.Compression;
 using UnityEngine.Events;
 using System.Runtime.ExceptionServices;
+using Unity.VisualScripting;
+using static System.Net.WebRequestMethods;
 
 public class Update_Launch : MonoBehaviour
 {
     [SerializeField] private Button bttn;
     //[SerializeField] private Text error_text;
     //[SerializeField] private Text progress_text;
+    [SerializeField] private TMPro.TMP_Dropdown dpdown;
 
     private string game_URL = "https://steelchunk.eu/games/releases/latest.zip";
     private string game_zip_path = Application.dataPath + "/latest.zip";
     private string game_folder_path = Application.dataPath + "/MyLittleExploree";
     private string game_exe_path = Application.dataPath + "/MyLittleExploree/MyLittleExploree.exe";
+
+    private string[] URLs = {"https://steelchunk.eu/games/releases/latest.zip", "https://steelchunk.eu/games/releases/latest.zip", "https://steelchunk.eu/games/releases/latest.zip"};
+
+    private string[][] games = new string[8][];
 
     void Awake()
     {
@@ -29,7 +36,7 @@ public class Update_Launch : MonoBehaviour
         //Debug.developerConsoleVisible = true;
         Application.targetFrameRate = 60;
 
-        if (File.Exists(game_zip_path) && Directory.Exists(game_folder_path) && File.Exists(game_exe_path))
+        if (System.IO.File.Exists(game_zip_path) && Directory.Exists(game_folder_path) && System.IO.File.Exists(game_exe_path))
         {
             //error_text.text = "Files already present, you can play now";
             //need to implement a md5 check to see if files are older than whats on server, so that you only download it if theres a new version.
@@ -49,22 +56,27 @@ public class Update_Launch : MonoBehaviour
     }
 
     void Update()
-    {
-        if (Process.GetProcessesByName("MyLittleExploree").Length > 0)
+    { //this method is probably really cpu intensive but i dont know a solution without rewritting the games.
+        if (Process.GetProcessesByName("MyLittleExploree").Length > 0 || Process.GetProcessesByName("CatchMeIfYouCan").Length > 0 || Process.GetProcessesByName("CloudShooter").Length > 0)
         {
             //error_text.text = "already running, disabling button";
             bttn.gameObject.GetComponent<Button>().interactable = false;
+            dpdown.interactable = false;
         }
         else
         {
             //error_text.text = "not running, enabling button";
             bttn.gameObject.GetComponent<Button>().interactable = true;
+            dpdown.interactable = true;
         }
+
+        
+
     }
 
     void game_Update()
     {
-        if (File.Exists(game_zip_path)) File.Delete(game_zip_path);
+        if (System.IO.File.Exists(game_zip_path)) System.IO.File.Delete(game_zip_path);
         if (Directory.Exists(game_zip_path)) Directory.Delete(game_zip_path, true);
 
         //Debug.Log("updating game!");
@@ -80,7 +92,7 @@ public class Update_Launch : MonoBehaviour
 
     void executeNow()
     {
-        if (!Directory.Exists(game_folder_path) || !File.Exists(game_zip_path))
+        if (!Directory.Exists(game_folder_path) || !System.IO.File.Exists(game_zip_path))
         {
             //error_text.text = "Files are not present, downloading again!";
             bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Downloading..";
@@ -115,7 +127,7 @@ public class Update_Launch : MonoBehaviour
                 yield return last_version.downloadHandler.data;
 
                 //gather the downloaded data from RAM and put it into a zip file.
-                File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
+                System.IO.File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
                 ZipFile.ExtractToDirectory(game_zip_path, game_folder_path);
                 bttn.GetComponent<Button>().onClick.RemoveAllListeners();
                 bttn.GetComponent<Button>().onClick.AddListener(executeNow);
