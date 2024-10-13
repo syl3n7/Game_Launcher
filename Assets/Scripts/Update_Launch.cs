@@ -22,13 +22,13 @@ public class Update_Launch : MonoBehaviour
     [SerializeField] private TMPro.TMP_Dropdown dpdown;
 
     private string game_URL = "https://steelchunk.eu/games/releases/latest.zip";
-    private string game_zip_path = Application.dataPath + "/latest.zip";
+    private string zip_path = Application.dataPath + "/latest.zip";
     private string game_folder_path = Application.dataPath + "/MyLittleExploree";
     private string game_exe_path = Application.dataPath + "/MyLittleExploree/MyLittleExploree.exe";
 
-    private string[] URLs = {"https://steelchunk.eu/games/releases/latest.zip", "https://steelchunk.eu/games/releases/latest.zip", "https://steelchunk.eu/games/releases/latest.zip"};
-
-    private string[][] games = new string[8][];
+    private string[] URLs = {"https://steelchunk.eu/games/releases/MyLittleExploree/latest.zip", "https://steelchunk.eu/games/releases/CatchMeIfYouCan/latest.zip", "https://steelchunk.eu/games/releases/CloudShooter/latest.zip"};
+    private string[] games_folder_path = {"/MyLittleExploree.zip", "/CatchMeIfYouCan", "/CloudShooter"};
+    private string[] games_exe_path = {"/MyLittleExploree/MyLittleExplore.exe", "/CatchMeIfYouCan/CatchMeIfYouCan.exe", "/CloudShooter/CloudShooter.exe"};
 
     void Awake()
     {
@@ -36,7 +36,7 @@ public class Update_Launch : MonoBehaviour
         //Debug.developerConsoleVisible = true;
         Application.targetFrameRate = 60;
 
-        if (System.IO.File.Exists(game_zip_path) && Directory.Exists(game_folder_path) && System.IO.File.Exists(game_exe_path))
+        if (System.IO.File.Exists(zip_path) && Directory.Exists(game_folder_path) && System.IO.File.Exists(game_exe_path))
         {
             //error_text.text = "Files already present, you can play now";
             //need to implement a md5 check to see if files are older than whats on server, so that you only download it if theres a new version.
@@ -69,18 +69,40 @@ public class Update_Launch : MonoBehaviour
             bttn.gameObject.GetComponent<Button>().interactable = true;
             dpdown.interactable = true;
         }
-
         
-
+        //this is not ok, need to optimize.
+        if (dpdown.value == 0) 
+        {
+            Debug.Log("Downloading MLE"); //igualar vars para MLE
+            game_URL = URLs[0];
+            game_folder_path = games_folder_path[0];
+            game_exe_path = games_exe_path[0];
+        }
+        
+        if (dpdown.value == 1) 
+        {
+            Debug.Log("Downloading CMIYC"); //igualar vars para CMIYC
+            game_URL = URLs[1];
+            game_folder_path = games_folder_path[1];
+            game_exe_path = games_exe_path[1];
+        }
+        
+        if (dpdown.value == 2) 
+        {
+            Debug.Log("Downloading CLS"); //igualar vars para CLS
+            game_URL = URLs[2];
+            game_folder_path = games_folder_path[2];
+            game_exe_path = games_exe_path[2];
+        }
     }
 
     void game_Update()
     {
-        if (System.IO.File.Exists(game_zip_path)) System.IO.File.Delete(game_zip_path);
-        if (Directory.Exists(game_zip_path)) Directory.Delete(game_zip_path, true);
+        if (System.IO.File.Exists(zip_path)) System.IO.File.Delete(zip_path);
+        if (Directory.Exists(zip_path)) Directory.Delete(zip_path, true);
 
         //Debug.Log("updating game!");
-        StartCoroutine(downloader(game_URL, game_zip_path));
+        StartCoroutine(downloader(game_URL, zip_path));
 
         //reprogram the download button to start the game.
         bttn.gameObject.GetComponent<Button>().interactable = false;
@@ -92,7 +114,7 @@ public class Update_Launch : MonoBehaviour
 
     void executeNow()
     {
-        if (!Directory.Exists(game_folder_path) || !System.IO.File.Exists(game_zip_path))
+        if (!Directory.Exists(game_folder_path) || !System.IO.File.Exists(zip_path))
         {
             //error_text.text = "Files are not present, downloading again!";
             bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Downloading..";
@@ -128,7 +150,7 @@ public class Update_Launch : MonoBehaviour
 
                 //gather the downloaded data from RAM and put it into a zip file.
                 System.IO.File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
-                ZipFile.ExtractToDirectory(game_zip_path, game_folder_path);
+                ZipFile.ExtractToDirectory( zip_path, game_folder_path);
                 bttn.GetComponent<Button>().onClick.RemoveAllListeners();
                 bttn.GetComponent<Button>().onClick.AddListener(executeNow);
                 bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
