@@ -11,7 +11,6 @@ using System.IO;
 using System.IO.Compression;
 using UnityEngine.Events;
 using System.Runtime.ExceptionServices;
-using Unity.VisualScripting;
 using static System.Net.WebRequestMethods;
 
 public class Update_Launch : MonoBehaviour
@@ -21,14 +20,27 @@ public class Update_Launch : MonoBehaviour
     //[SerializeField] private Text progress_text;
     [SerializeField] private TMPro.TMP_Dropdown dpdown;
 
-    private string game_URL = "https://steelchunk.eu/games/releases/latest.zip";
+    private string game_URL = "";
     private string zip_path = Application.dataPath + "/latest.zip";
-    private string game_folder_path = Application.dataPath + "/MyLittleExploree";
-    private string game_exe_path = Application.dataPath + "/MyLittleExploree/MyLittleExploree.exe";
+    private string game_folder_path = "";
+    private string game_exe_path = "";
+    private string tempGAME = "";
 
-    private string[] URLs = {"https://steelchunk.eu/games/releases/MyLittleExploree/latest.zip", "https://steelchunk.eu/games/releases/CatchMeIfYouCan/latest.zip", "https://steelchunk.eu/games/releases/CloudShooter/latest.zip"};
-    private string[] games_folder_path = {"/MyLittleExploree.zip", "/CatchMeIfYouCan", "/CloudShooter"};
-    private string[] games_exe_path = {"/MyLittleExploree/MyLittleExplore.exe", "/CatchMeIfYouCan/CatchMeIfYouCan.exe", "/CloudShooter/CloudShooter.exe"};
+    private string[] URLs = { 
+        "https://steelchunk.eu/games/MyLittleExploree/releases/latest.zip", 
+        "https://steelchunk.eu/games/CatchMeIfYouCan/releases/latest.zip", 
+        "https://steelchunk.eu/games/CloudShooter/releases/latest.zip" 
+    };
+    private string[] games_folder_path = { 
+        Application.dataPath + "/MyLittleExploree", 
+        Application.dataPath + "/CatchMeIfYouCan", 
+        Application.dataPath + "/CloudShooter" 
+    };
+    private string[] games_exe_path = {
+        Application.dataPath + "/MyLittleExploree/MyLittleExploree.exe", 
+        Application.dataPath + "/CatchMeIfYouCan/CatchMeIfYouCan.exe", 
+        Application.dataPath + "/CloudShooter/CloudShooter.exe" 
+    };
 
     void Awake()
     {
@@ -53,11 +65,24 @@ public class Update_Launch : MonoBehaviour
             bttn.GetComponent<Button>().onClick.RemoveAllListeners();
             bttn.GetComponent<Button>().onClick.AddListener(game_Update);
         }
+
+        dpdown.onValueChanged.AddListener(delegate
+        {
+            changeGame(dpdown.value);
+        });
+    }
+    private void Start()
+    {
+        tempGAME = "MyLittleExploree";
+        game_URL = URLs[0].ToString();
+        game_folder_path = games_folder_path[0].ToString();
+        game_exe_path = games_exe_path[0].ToString();
     }
 
     void Update()
     { //this method is probably really cpu intensive but i dont know a solution without rewritting the games.
-        if (Process.GetProcessesByName("MyLittleExploree").Length > 0 || Process.GetProcessesByName("CatchMeIfYouCan").Length > 0 || Process.GetProcessesByName("CloudShooter").Length > 0)
+        
+        if (Process.GetProcessesByName(tempGAME).Length > 0)
         {
             //error_text.text = "already running, disabling button";
             bttn.gameObject.GetComponent<Button>().interactable = false;
@@ -69,30 +94,36 @@ public class Update_Launch : MonoBehaviour
             bttn.gameObject.GetComponent<Button>().interactable = true;
             dpdown.interactable = true;
         }
-        
-        //this is not ok, need to optimize.
-        if (dpdown.value == 0) 
+    }
+
+    void changeGame(int value)
+    {                               //consoante o valor recebido, executar o if correspondente.
+        if (value == 0)
         {
-            Debug.Log("Downloading MLE"); //igualar vars para MLE
-            game_URL = URLs[0];
-            game_folder_path = games_folder_path[0];
-            game_exe_path = games_exe_path[0];
+            //Debug.Log("\nchanged to MLE"); //igualar vars para MLE
+            tempGAME = "MyLittleExploree";
+            game_URL = URLs[0].ToString();
+            game_folder_path = games_folder_path[0].ToString();
+            game_exe_path = games_exe_path[0].ToString();
         }
-        
-        if (dpdown.value == 1) 
+
+
+        if (value == 1)
         {
-            Debug.Log("Downloading CMIYC"); //igualar vars para CMIYC
-            game_URL = URLs[1];
-            game_folder_path = games_folder_path[1];
-            game_exe_path = games_exe_path[1];
+            //Debug.Log("\nchanged to CMIYC"); //igualar vars para CMIYC
+            tempGAME = "CatchMeIfYouCan";
+            game_URL = URLs[1].ToString();
+            game_folder_path = games_folder_path[1].ToString();
+            game_exe_path = games_exe_path[1].ToString();
         }
-        
-        if (dpdown.value == 2) 
+
+        if (value == 2)
         {
-            Debug.Log("Downloading CLS"); //igualar vars para CLS
-            game_URL = URLs[2];
-            game_folder_path = games_folder_path[2];
-            game_exe_path = games_exe_path[2];
+            //Debug.Log("\nchanged to CLS"); //igualar vars para CLS
+            tempGAME = "CloudShooter";
+            game_URL = URLs[2].ToString();
+            game_folder_path = games_folder_path[2].ToString();
+            game_exe_path = games_exe_path[2].ToString();
         }
     }
 
@@ -150,7 +181,7 @@ public class Update_Launch : MonoBehaviour
 
                 //gather the downloaded data from RAM and put it into a zip file.
                 System.IO.File.WriteAllBytes(zip_path, last_version.downloadHandler.data);
-                ZipFile.ExtractToDirectory( zip_path, game_folder_path);
+                ZipFile.ExtractToDirectory(zip_path, game_folder_path);
                 bttn.GetComponent<Button>().onClick.RemoveAllListeners();
                 bttn.GetComponent<Button>().onClick.AddListener(executeNow);
                 bttn.gameObject.GetComponentInChildren<TMP_Text>().text = "Play Now!";
